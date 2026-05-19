@@ -8,6 +8,7 @@ import os
 import csv
 import io
 from datetime import datetime
+import re
 
 app = Flask(__name__)
 
@@ -41,23 +42,97 @@ AY_EN = ["january","february","march","april","may","june",
 AY_TR = ["ocak","şubat","mart","nisan","mayıs","haziran",
          "temmuz","ağustos","eylül","ekim","kasım","aralık"]
 
-def gecmis_mi(baslik):
+# Ay kısaltmaları (Jan, Feb, Mar...)
+AY_KISALT = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"]
+
+def tarih_gecmis_mi(metin):
+    """
+    Metinde geçen tarihleri bulur, geçmişte mi gelecekte mi kontrol eder.
+    Geçmişteyse True döner.
+    """
     su_an  = datetime.now()
     bu_yil = su_an.year
     bu_ay  = su_an.month
-    metin  = baslik.lower()
+    bu_gun = su_an.day
 
-    if any(i in metin for i in GECMIS_ISARETLER):
-        return True
-    for yil in range(2018, bu_yil):
-        if str(yil) in metin:
-            return True
+    metin_lower = metin.lower()
+
+    # "28 February 2026" veya "February 28, 2026" gibi tam tarih formatları
+    # Önce yıl+ay kombinasyonunu bul
     for ay_idx, ay in enumerate(AY_EN, start=1):
-        if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
+        if ay in metin_lower:
+            # Metinde bu ay ve bir yıl var mı?
+            yil_eslesmeler = re.findall(r'\b(20\d{2})\b', metin)
+            for yil_str in yil_eslesmeler:
+                yil = int(yil_str)
+                if yil < bu_yil:
+                    return True  # Geçmiş yıl
+                if yil == bu_yil and ay_idx < bu_ay:
+                    return True  # Bu yılın geçmiş ayı
+                if yil == bu_yil and ay_idx == bu_ay:
+                    # Aynı ay — günü kontrol et
+                    gun_eslesmeler = re.findall(r'\b(\d{1,2})\b', metin)
+                    for gun_str in gun_eslesmeler:
+                        gun = int(gun_str)
+                        if 1 <= gun <= 31 and gun < bu_gun:
+                            return True
+
+    # Kısaltmalar: "Feb 28" veya "28 Feb"
+    for ay_idx, ay in enumerate(AY_KISALT, start=1):
+        if ay in metin_lower:
+            yil_eslesmeler = re.findall(r'\b(20\d{2})\b', metin)
+            for yil_str in yil_eslesmeler:
+                yil = int(yil_str)
+                if yil < bu_yil:
+                    return True
+                if yil == bu_yil and ay_idx < bu_ay:
+                    return True
+
+    # "MM/DD/YYYY" veya "DD.MM.YYYY" formatları
+    tarih_pattern = re.findall(r'\b(\d{1,2})[./](\d{1,2})[./](20\d{2})\b', metin)
+    for t in tarih_pattern:
+        try:
+            # DD.MM.YYYY olarak dene
+            gun, ay, yil = int(t[0]), int(t[1]), int(t[2])
+            if yil < bu_yil: return True
+            if yil == bu_yil and ay < bu_ay: return True
+            if yil == bu_yil and ay == bu_ay and gun < bu_gun: return True
+        except Exception:
+            pass
+
+    return False
+
+def gecmis_mi(baslik, snippet=""):
+    su_an  = datetime.now()
+    bu_yil = su_an.year
+    bu_ay  = su_an.month
+
+    # Başlık + snippet birleştir
+    tam_metin = (baslik + " " + snippet).lower()
+
+    # Geçmiş kelimeler
+    if any(i in tam_metin for i in GECMIS_ISARETLER):
+        return True
+
+    # Tarih analizi — hem başlık hem snippet'te
+    if tarih_gecmis_mi(baslik + " " + snippet):
+        return True
+
+    # Geçmiş yıllar
+    for yil in range(2018, bu_yil):
+        if str(yil) in tam_metin:
             return True
+
+    # Bu yılın geçmiş ayları (İngilizce)
+    for ay_idx, ay in enumerate(AY_EN, start=1):
+        if ay in tam_metin and str(bu_yil) in tam_metin and ay_idx < bu_ay:
+            return True
+
+    # Bu yılın geçmiş ayları (Türkçe)
     for ay_idx, ay in enumerate(AY_TR, start=1):
-        if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
+        if ay in tam_metin and str(bu_yil) in tam_metin and ay_idx < bu_ay:
             return True
+
     return False
 
 def platform_bul(link):
@@ -101,15 +176,20 @@ def tara(konum, kategoriler):
 
         for s in serp_ara(sorgu, konum):
             try:
-                link   = s.get("link", "")
-                baslik = s.get("title", "").strip()
+                link    = s.get("link", "")
+                baslik  = s.get("title", "").strip()
+                snippet = s.get("snippet", "").strip()  # ← açıklama metni de alınıyor
+
                 if not link or link in hafiza: continue
                 platform = platform_bul(link)
                 if not platform: continue
                 if not baslik or len(baslik) < 3: baslik = "Etkinlik"
-                if gecmis_mi(baslik):
+
+                # Snippet de kontrol ediliyor
+                if gecmis_mi(baslik, snippet):
                     hafiza.add(link)
                     continue
+
                 etkinlik = {
                     "baslik": baslik, "platform": platform,
                     "kategori": KATEGORI_ETIKET.get(kat, "📅 Genel Etkinlik"),
