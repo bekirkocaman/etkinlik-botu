@@ -18,14 +18,16 @@ SERP_KEY = "4047ec625df667bbbd034bf5b53657d61ffa1b46a0551ed2d6d1932733abeed6"
 KATEGORILER = {
     "siber_guvenlik":    ["cybersecurity event", "hacking event", "CTF competition", "security conference"],
     "yazilim_teknoloji": ["software event", "tech meetup", "hackathon", "developer conference", "startup event"],
-    "eglence_oyun":      ["gaming event", "esports tournament", "game jam", "gaming tournament"],
+    "oyun":              ["gaming event", "esports tournament", "game jam", "gaming tournament", "LAN party"],
+    "eglence":           ["party night", "bar event", "nightlife event", "Turkish night", "club event", "concert night", "festival party"],
     "genel_etkinlik":    ["festival", "concert", "upcoming event"]
 }
 
 KATEGORI_ETIKET = {
     "siber_guvenlik":    "🔒 Siber Güvenlik",
     "yazilim_teknoloji": "💻 Yazılım/Teknoloji",
-    "eglence_oyun":      "🎮 Eğlence/Oyun",
+    "oyun":              "🎮 Oyun",
+    "eglence":           "🎉 Eğlence",
     "genel_etkinlik":    "📅 Genel Etkinlik"
 }
 
@@ -39,34 +41,23 @@ AY_EN = ["january","february","march","april","may","june",
 AY_TR = ["ocak","şubat","mart","nisan","mayıs","haziran",
          "temmuz","ağustos","eylül","ekim","kasım","aralık"]
 
-PLATFORMLAR = ["facebook.com","instagram.com","linkedin.com","eventbrite.com","meetup.com"]
-
 def gecmis_mi(baslik):
-    # Her seferinde anlık tarih alınıyor — deploy zamanına bağlı değil
-    su_an   = datetime.now()
-    bu_yil  = su_an.year
-    bu_ay   = su_an.month  # Mayıs = 5, Nisan ve öncesi atılır
-
-    metin = baslik.lower()
+    su_an  = datetime.now()
+    bu_yil = su_an.year
+    bu_ay  = su_an.month
+    metin  = baslik.lower()
 
     if any(i in metin for i in GECMIS_ISARETLER):
         return True
-
-    # Geçmiş yıllar
     for yil in range(2018, bu_yil):
         if str(yil) in metin:
             return True
-
-    # Bu yılın geçmiş ayları (İngilizce)
     for ay_idx, ay in enumerate(AY_EN, start=1):
         if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
             return True
-
-    # Bu yılın geçmiş ayları (Türkçe)
     for ay_idx, ay in enumerate(AY_TR, start=1):
         if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
             return True
-
     return False
 
 def platform_bul(link):
@@ -80,21 +71,14 @@ def platform_bul(link):
 def serp_ara(sorgu, konum):
     su_an  = datetime.now()
     bu_yil = su_an.year
-
     platform_filtre = "site:facebook.com OR site:instagram.com OR site:linkedin.com OR site:eventbrite.com OR site:meetup.com"
     tam_sorgu = f"{sorgu} {konum} upcoming {bu_yil} ({platform_filtre})"
-
     params = urllib.parse.urlencode({
-        "q":       tam_sorgu,
-        "api_key": SERP_KEY,
-        "num":     10,
-        "hl":      "en",
-        "gl":      "mk"
+        "q": tam_sorgu, "api_key": SERP_KEY,
+        "num": 10, "hl": "en", "gl": "mk"
     })
-    url = f"https://serpapi.com/search.json?{params}"
-
     try:
-        with urllib.request.urlopen(url, timeout=15) as r:
+        with urllib.request.urlopen(f"https://serpapi.com/search.json?{params}", timeout=15) as r:
             data = json.loads(r.read().decode())
         return data.get("organic_results", [])
     except Exception as e:
@@ -115,39 +99,25 @@ def tara(konum, kategoriler):
         yuzde = int((i / len(arama_listesi)) * 100)
         yield f"data: {json.dumps({'tip':'ilerleme','mesaj':f'{sorgu} taranıyor... ({i+1}/{len(arama_listesi)})','yuzde':yuzde})}\n\n"
 
-        sonuclar = serp_ara(sorgu, konum)
-
-        for s in sonuclar:
+        for s in serp_ara(sorgu, konum):
             try:
                 link   = s.get("link", "")
                 baslik = s.get("title", "").strip()
-
-                if not link or link in hafiza:
-                    continue
-
+                if not link or link in hafiza: continue
                 platform = platform_bul(link)
-                if not platform:
-                    continue
-
-                if not baslik or len(baslik) < 3:
-                    baslik = "Etkinlik"
-
+                if not platform: continue
+                if not baslik or len(baslik) < 3: baslik = "Etkinlik"
                 if gecmis_mi(baslik):
                     hafiza.add(link)
                     continue
-
                 etkinlik = {
-                    "baslik":       baslik,
-                    "platform":     platform,
-                    "kategori":     KATEGORI_ETIKET.get(kat, "📅 Genel Etkinlik"),
-                    "kategori_key": kat,
-                    "konum":        konum,
-                    "link":         link
+                    "baslik": baslik, "platform": platform,
+                    "kategori": KATEGORI_ETIKET.get(kat, "📅 Genel Etkinlik"),
+                    "kategori_key": kat, "konum": konum, "link": link
                 }
                 toplam += 1
                 hafiza.add(link)
                 yield f"data: {json.dumps({'tip':'etkinlik','veri':etkinlik})}\n\n"
-
             except Exception:
                 continue
 
