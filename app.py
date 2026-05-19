@@ -15,10 +15,6 @@ kapsam = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/a
 TABLO_ID = "1lY3ncFUl5rzGvKi6F8P8l98ajbWYsdXHyKV1Qwm6kFU"
 SERP_KEY = "4047ec625df667bbbd034bf5b53657d61ffa1b46a0551ed2d6d1932733abeed6"
 
-SIMDI = datetime.now()
-BU_YIL = SIMDI.year
-BU_AY  = SIMDI.month
-
 KATEGORILER = {
     "siber_guvenlik":    ["cybersecurity event", "hacking event", "CTF competition", "security conference"],
     "yazilim_teknoloji": ["software event", "tech meetup", "hackathon", "developer conference", "startup event"],
@@ -46,18 +42,31 @@ AY_TR = ["ocak","şubat","mart","nisan","mayıs","haziran",
 PLATFORMLAR = ["facebook.com","instagram.com","linkedin.com","eventbrite.com","meetup.com"]
 
 def gecmis_mi(baslik):
+    # Her seferinde anlık tarih alınıyor — deploy zamanına bağlı değil
+    su_an   = datetime.now()
+    bu_yil  = su_an.year
+    bu_ay   = su_an.month  # Mayıs = 5, Nisan ve öncesi atılır
+
     metin = baslik.lower()
+
     if any(i in metin for i in GECMIS_ISARETLER):
         return True
-    for yil in range(2018, BU_YIL):
+
+    # Geçmiş yıllar
+    for yil in range(2018, bu_yil):
         if str(yil) in metin:
             return True
+
+    # Bu yılın geçmiş ayları (İngilizce)
     for ay_idx, ay in enumerate(AY_EN, start=1):
-        if ay in metin and str(BU_YIL) in metin and ay_idx < BU_AY:
+        if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
             return True
+
+    # Bu yılın geçmiş ayları (Türkçe)
     for ay_idx, ay in enumerate(AY_TR, start=1):
-        if ay in metin and str(BU_YIL) in metin and ay_idx < BU_AY:
+        if ay in metin and str(bu_yil) in metin and ay_idx < bu_ay:
             return True
+
     return False
 
 def platform_bul(link):
@@ -69,16 +78,18 @@ def platform_bul(link):
     return None
 
 def serp_ara(sorgu, konum):
-    """SerpAPI ile Google arama yapar, organik sonuçları döndürür"""
+    su_an  = datetime.now()
+    bu_yil = su_an.year
+
     platform_filtre = "site:facebook.com OR site:instagram.com OR site:linkedin.com OR site:eventbrite.com OR site:meetup.com"
-    tam_sorgu = f"{sorgu} {konum} upcoming {BU_YIL} ({platform_filtre})"
+    tam_sorgu = f"{sorgu} {konum} upcoming {bu_yil} ({platform_filtre})"
 
     params = urllib.parse.urlencode({
-        "q": tam_sorgu,
+        "q":       tam_sorgu,
         "api_key": SERP_KEY,
-        "num": 10,
-        "hl": "en",
-        "gl": "mk"
+        "num":     10,
+        "hl":      "en",
+        "gl":      "mk"
     })
     url = f"https://serpapi.com/search.json?{params}"
 
