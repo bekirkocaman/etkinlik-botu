@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Etkinlik Avcısı | Tiger Tiger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;
+      --border:#2a2a3d;--accent:#6c63ff;--accent2:#ff6584;
+      --accent3:#43e97b;--text:#e8e8f0;--muted:#6b6b8a;
+    }
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse 60% 40% at 20% 10%,rgba(108,99,255,.12) 0%,transparent 60%),
+                 radial-gradient(ellipse 40% 50% at 80% 80%,rgba(255,101,132,.08) 0%,transparent 60%)}
+    .wrap{position:relative;z-index:1;max-width:500px;margin:0 auto;padding:20px 16px 60px}
+
+    /* HEADER */
+    header{text-align:center;padding:28px 0 20px}
+    .tiger-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(255,101,132,.15));
+      border:1px solid rgba(108,99,255,.4);border-radius:999px;
+      padding:6px 16px;font-size:11px;font-family:'Syne',sans-serif;
+      font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--accent);margin-bottom:14px
+    }
+    .tiger-badge .tiger-icon{font-size:14px}
+    h1{font-family:'Syne',sans-serif;font-size:clamp(26px,7vw,38px);font-weight:800;line-height:1.1;letter-spacing:-.02em}
+    h1 .grad{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .nickname{
+      display:inline-block;margin-top:6px;
+      font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+      letter-spacing:.15em;text-transform:uppercase;
+      color:var(--muted)
+    }
+    .nickname span{color:var(--accent2)}
+
+    /* CARD */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px}
+    .card-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+
+    /* INPUT */
+    .input-wrap{position:relative}
+    .input-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+    input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:13px 13px 13px 40px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+    input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+    input[type=text]::placeholder{color:var(--muted)}
+
+    /* CHIPS */
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      display:flex;align-items:center;gap:6px;
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:999px;padding:8px 14px;font-size:13px;
+      cursor:pointer;transition:all .2s;user-select:none;color:var(--muted)
+    }
+    .chip:hover{border-color:var(--accent);color:var(--text)}
+    /* AKTİF STİLLER */
+    .chip[data-kat=siber_guvenlik].aktif     {background:rgba(108,99,255,.15);border-color:var(--accent);color:var(--accent)}
+    .chip[data-kat=yazilim_teknoloji].aktif  {background:rgba(67,233,123,.12);border-color:var(--accent3);color:var(--accent3)}
+    .chip[data-kat=eglence_oyun].aktif       {background:rgba(255,101,132,.12);border-color:var(--accent2);color:var(--accent2)}
+    .chip[data-kat=genel_etkinlik].aktif     {background:rgba(255,193,7,.12);border-color:#ffc107;color:#ffc107}
+
+    /* BUTON */
+    #taraBtn{
+      width:100%;background:linear-gradient(135deg,var(--accent),#8b5cf6);
+      border:none;border-radius:13px;padding:15px;color:#fff;
+      font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+      letter-spacing:.04em;cursor:pointer;transition:all .2s;
+      box-shadow:0 4px 20px rgba(108,99,255,.35);
+      position:relative;overflow:hidden;margin-bottom:14px
+    }
+    #taraBtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 28px rgba(108,99,255,.5)}
+    #taraBtn:disabled{opacity:.6;cursor:not-allowed}
+    .shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:shine 2s infinite}
+
+    /* PROGRESS */
+    #progressWrap{display:none;margin-bottom:14px}
+    .pb-bg{background:var(--surface2);border-radius:999px;height:5px;overflow:hidden;margin-bottom:7px}
+    .pb-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;transition:width .4s ease;width:0%}
+    .pb-txt{font-size:11px;color:var(--muted)}
+
+    /* STATS */
+    #statsWrap{display:none;gap:10px;margin-bottom:14px}
+    #statsWrap.show{display:flex}
+    .stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px;text-align:center}
+    .stat-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-l{font-size:10px;color:var(--muted);margin-top:2px}
+
+    /* AKSİYONLAR */
+    #aksiyonlar{display:none;gap:10px;margin-bottom:18px}
+    #aksiyonlar.show{display:flex}
+    .ab{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;text-align:center}
+    .ab:hover{border-color:var(--accent);background:rgba(108,99,255,.08)}
+    .ab .abi{font-size:17px;display:block;margin-bottom:3px}
+
+    /* KATEGORİ BÖLÜMÜ */
+    .kat-bolum{margin-bottom:18px}
+    .kat-header{
+      display:flex;align-items:center;gap:8px;
+      font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+      letter-spacing:.08em;text-transform:uppercase;
+      padding:9px 13px;border-radius:11px;margin-bottom:8px;border:1px solid
+    }
+    .kat-header.siber    {background:rgba(108,99,255,.1);color:var(--accent);border-color:rgba(108,99,255,.3)}
+    .kat-header.yazilim  {background:rgba(67,233,123,.1);color:var(--accent3);border-color:rgba(67,233,123,.3)}
+    .kat-header.eglence  {background:rgba(255,101,132,.1);color:var(--accent2);border-color:rgba(255,101,132,.3)}
+    .kat-header.genel    {background:rgba(255,193,7,.1);color:#ffc107;border-color:rgba(255,193,7,.3)}
+    .kat-sayi{margin-left:auto;font-size:10px;opacity:.7}
+
+    /* ETKİNLİK KARTI */
+    .ekart{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;animation:fadeUp .35s ease both;transition:border-color .2s,transform .2s}
+    .ekart:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .ekart-ust{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px}
+    .ekart-baslik{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;line-height:1.3;flex:1}
+    .pbadge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;white-space:nowrap;flex-shrink:0;border:1px solid}
+    .pb-Facebook  {background:rgba(24,119,242,.15);color:#4a9eff;border-color:rgba(24,119,242,.25)}
+    .pb-Instagram {background:rgba(225,48,108,.15);color:#f06292;border-color:rgba(225,48,108,.25)}
+    .pb-LinkedIn  {background:rgba(0,119,181,.15);color:#4fc3f7;border-color:rgba(0,119,181,.25)}
+    .pb-Eventbrite{background:rgba(255,109,0,.15);color:#ffb74d;border-color:rgba(255,109,0,.25)}
+    .pb-Meetup    {background:rgba(237,28,62,.15);color:#ef9a9a;border-color:rgba(237,28,62,.25)}
+    .ekart-alt{display:flex;align-items:center;justify-content:flex-end}
+    .link-btn{font-size:12px;color:var(--accent);text-decoration:none;font-weight:500}
+    .link-btn:hover{text-decoration:underline}
+
+    /* BOŞ DURUM */
+    .bos{text-align:center;padding:48px 24px;color:var(--muted)}
+    .bos .bos-ico{font-size:46px;margin-bottom:10px}
+    .bos p{font-size:13px}
+
+    /* TOAST */
+    #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:11px 18px;font-size:13px;z-index:999;transition:transform .3s ease;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    #toast.ok{border-color:var(--accent3);color:var(--accent3)}
+    #toast.err{border-color:var(--accent2);color:var(--accent2)}
+
+    @keyframes fadeDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes shine{0%{left:-100%}100%{left:200%}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tiger-badge"><span class="tiger-icon">🐯</span> Tiger Tiger</div>
+    <h1>Etkinlik<br/><span class="grad">Avcısı</span></h1>
+    <div class="nickname">by <span>bekirkocaman</span></div>
+  </header>
+
+  <!-- Konum -->
+  <div class="card">
+    <div class="card-label">📍 Konum</div>
+    <div class="input-wrap">
+      <span class="ico">🌍</span>
+      <input type="text" id="konum" placeholder="Şehir veya ülke (örn: Macedonia)" value="Macedonia"/>
+    </div>
+  </div>
+
+  <!-- Kategoriler -->
+  <div class="card">
+    <div class="card-label">🎯 Kategoriler</div>
+    <div class="chips">
+      <div class="chip aktif" data-kat="siber_guvenlik">🔒 Siber Güvenlik</div>
+      <div class="chip aktif" data-kat="yazilim_teknoloji">💻 Yazılım</div>
+      <div class="chip aktif" data-kat="eglence_oyun">🎮 Eğlence/Oyun</div>
+      <div class="chip aktif" data-kat="genel_etkinlik">📅 Genel</div>
+    </div>
+  </div>
+
+  <!-- Buton -->
+  <button id="taraBtn"><span class="shine"></span>🚀 Etkinlikleri Tara</button>
+
+  <!-- Progress -->
+  <div id="progressWrap" class="card">
+    <div class="card-label">⚡ Taranıyor...</div>
+    <div class="pb-bg"><div class="pb-fill" id="pbFill"></div></div>
+    <div class="pb-txt" id="pbTxt">Başlatılıyor...</div>
+  </div>
+
+  <!-- Stats -->
+  <div id="statsWrap">
+    <div class="stat"><div class="stat-n" id="statN">0</div><div class="stat-l">Etkinlik</div></div>
+    <div class="stat"><div class="stat-n" id="statK">-</div><div class="stat-l">Kategori</div></div>
+  </div>
+
+  <!-- Aksiyonlar -->
+  <div id="aksiyonlar">
+    <button class="ab" onclick="sheetsGonder()"><span class="abi">📊</span>Sheets'e Gönder</button>
+    <button class="ab" onclick="csvIndir()"><span class="abi">⬇️</span>CSV İndir</button>
+  </div>
+
+  <!-- Sonuçlar -->
+  <div id="sonuclar">
+    <div class="bos"><div class="bos-ico">🔭</div><p>Taramak için butona bas</p></div>
+  </div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+const KATLAR = {
+  siber_guvenlik:    {cls:'siber',   etiket:'🔒 Siber Güvenlik'},
+  yazilim_teknoloji: {cls:'yazilim', etiket:'💻 Yazılım/Teknoloji'},
+  eglence_oyun:      {cls:'eglence', etiket:'🎮 Eğlence/Oyun'},
+  genel_etkinlik:    {cls:'genel',   etiket:'📅 Genel Etkinlik'}
+};
+
+let tumVeriler = [];
+let katVeriler = {};  // kategori_key → [etkinlikler]
+let katDivler  = {};  // kategori_key → DOM elementi
+
+// ── Chip toggle (artık <div> kullanıyoruz, checkbox yok) ──
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => chip.classList.toggle('aktif'));
+});
+
+document.getElementById('taraBtn').addEventListener('click', () => {
+  const konum = document.getElementById('konum').value.trim() || 'Macedonia';
+  const aktifler = [...document.querySelectorAll('.chip.aktif')].map(c => c.dataset.kat);
+  if (!aktifler.length) { toast('En az bir kategori seç!','err'); return; }
+  baslatTarama(konum, aktifler);
+});
+
+function baslatTarama(konum, kategoriler) {
+  tumVeriler = []; katVeriler = {}; katDivler = {};
+  const btn = document.getElementById('taraBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="shine"></span>⏳ Taranıyor...';
+
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('statsWrap').classList.remove('show');
+  document.getElementById('aksiyonlar').classList.remove('show');
+  document.getElementById('sonuclar').innerHTML = '';
+
+  const p = new URLSearchParams({konum});
+  kategoriler.forEach(k => p.append('kategoriler', k));
+  const es = new EventSource('/tara?' + p);
+
+  es.onmessage = e => {
+    const d = JSON.parse(e.data);
+
+    if (d.tip === 'ilerleme') {
+      document.getElementById('pbFill').style.width = d.yuzde + '%';
+      document.getElementById('pbTxt').textContent = d.mesaj;
+    }
+
+    else if (d.tip === 'etkinlik') {
+      const v = d.veri;
+      tumVeriler.push(v);
+
+      const key = v.kategori_key || 'genel_etkinlik';
+      if (!katVeriler[key]) katVeriler[key] = [];
+      katVeriler[key].push(v);
+
+      // Kategori bölümü yoksa oluştur
+      if (!katDivler[key]) {
+        const info = KATLAR[key] || KATLAR.genel_etkinlik;
+        const bolum = document.createElement('div');
+        bolum.className = 'kat-bolum';
+        bolum.innerHTML = `
+          <div class="kat-header ${info.cls}" id="kh-${key}">
+            ${info.etiket} <span class="kat-sayi" id="ks-${key}">0 etkinlik</span>
+          </div>
+          <div id="kl-${key}"></div>`;
+        document.getElementById('sonuclar').appendChild(bolum);
+        katDivler[key] = bolum;
+      }
+
+      // Sayıyı güncelle
+      document.getElementById('ks-' + key).textContent = katVeriler[key].length + ' etkinlik';
+
+      // Kartı ekle
+      const kart = document.createElement('div');
+      kart.className = 'ekart';
+      kart.innerHTML = `
+        <div class="ekart-ust">
+          <div class="ekart-baslik">${esc(v.baslik)}</div>
+          <span class="pbadge pb-${v.platform}">${v.platform}</span>
+        </div>
+        <div class="ekart-alt">
+          <a href="${esc(v.link)}" target="_blank" class="link-btn">Görüntüle →</a>
+        </div>`;
+      document.getElementById('kl-' + key).appendChild(kart);
+
+      // Stats
+      document.getElementById('statN').textContent = tumVeriler.length;
+      document.getElementById('statK').textContent = Object.keys(katVeriler).length;
+      document.getElementById('statsWrap').classList.add('show');
+    }
+
+    else if (d.tip === 'bitti') {
+      es.close();
+      document.getElementById('progressWrap').style.display = 'none';
+      btn.disabled = false;
+      btn.innerHTML = '<span class="shine"></span>🚀 Tekrar Tara';
+
+      if (tumVeriler.length > 0) {
+        document.getElementById('aksiyonlar').classList.add('show');
+        toast('✅ ' + tumVeriler.length + ' etkinlik bulundu!', 'ok');
+      } else {
+        document.getElementById('sonuclar').innerHTML =
+          '<div class="bos"><div class="bos-ico">😔</div><p>Hiç etkinlik bulunamadı. Farklı konum dene.</p></div>';
+        toast('Etkinlik bulunamadı', 'err');
+      }
+    }
+  };
+
+  es.onerror = () => {
+    es.close();
+    btn.disabled = false;
+    btn.innerHTML = '<span class="shine"></span>🚀 Etkinlikleri Tara';
+    document.getElementById('progressWrap').style.display = 'none';
+    toast('Bağlantı hatası!', 'err');
+  };
+}
+
+async function sheetsGonder() {
+  if (!tumVeriler.length) { toast('Gönderilecek veri yok!','err'); return; }
+  toast('📊 Gönderiliyor...','');
+  const r = await fetch('/sheets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({veriler:tumVeriler})});
+  const j = await r.json();
+  toast((j.basari?'✅ ':'❌ ')+j.mesaj, j.basari?'ok':'err');
+}
+
+async function csvIndir() {
+  if (!tumVeriler.length) { toast('İndirilecek veri yok!','err'); return; }
+  const r = await fetch('/csv',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({veriler:tumVeriler})});
+  const blob = await r.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download='etkinlikler.csv'; a.click();
+  toast('⬇️ İndirildi!','ok');
+}
+
+function toast(msg, tip) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + tip;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className='', 3000);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
