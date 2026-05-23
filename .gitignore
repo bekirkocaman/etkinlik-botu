@@ -1,0 +1,21 @@
+# Gizli dosyalar
+.env
+kimlik.json
+credentials.json
+
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Ciktilar
+*.csv
+!docs/examples/.gitkeep
