@@ -1,55 +1,55 @@
-# Etkinlik Avcısı
+# Event Hunter
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub](https://img.shields.io/github/stars/bekirkocaman/etkinlik-botu?style=social)](https://github.com/bekirkocaman/etkinlik-botu)
 
-Konum ve kategoriye göre **Facebook, Instagram, LinkedIn, Eventbrite ve Meetup** üzerinde gelecek etkinlikleri tarayan Flask web uygulaması. Sonuçlar canlı akış (SSE) ile listelenir; CSV indirilebilir veya Google Sheets’e aktarılabilir.
+A Flask web application that searches for upcoming events across **Facebook, Instagram, LinkedIn, Eventbrite, and Meetup** by location and category. Results are streamed live via SSE; exportable to CSV or Google Sheets.
 
 ---
 
-## Özellikler
+## Features
 
-| Özellik | Açıklama |
-|--------|----------|
-| 🔍 SerpAPI arama | Kategori bazlı çoklu sorgu |
-| 📅 Tarih filtresi | Geçmiş etkinlikleri otomatik eleme |
-| 📡 Canlı sonuç | Server-Sent Events ile anlık kartlar |
-| ⬇️ CSV export | Tek tıkla indirme |
-| 📊 Google Sheets | Service account ile toplu kayıt |
-| 📱 Mobil arayüz | Koyu tema, kategori chip’leri |
-
----
-
-## Ekran görünümü
-
-Ana sayfa: konum girişi, kategori seçimi, tarama ilerleme çubuğu ve platform rozetli etkinlik kartları.
+| Feature | Description |
+|---------|-------------|
+| 🔍 SerpAPI Search | Multi-query search by category |
+| 📅 Date Filter | Automatically filters out past events |
+| 📡 Live Results | Real-time event cards via Server-Sent Events |
+| ⬇️ CSV Export | One-click download |
+| 📊 Google Sheets | Bulk export via service account |
+| 📱 Mobile UI | Dark theme with category chips |
 
 ---
 
-## Mimari
+## Screenshot
+
+Home page: location input, category selection, scan progress bar, and event cards with platform badges.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TB
     UI[index.html] -->|SSE /tara| API[Flask app.py]
     API --> Serp[SerpAPI]
-    API -->|POST /csv| CSV[CSV dosyasi]
+    API -->|POST /csv| CSV[CSV File]
     API -->|POST /sheets| GS[Google Sheets API]
 ```
 
 ---
 
-## Kurulum
+## Setup
 
-### 1. Depoyu klonlayın
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/bekirkocaman/etkinlik-botu.git
 cd etkinlik-botu
 ```
 
-### 2. Sanal ortam
+### 2. Virtual environment
 
 ```powershell
 python -m venv venv
@@ -57,52 +57,52 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### 3. Ortam değişkenleri
+### 3. Environment variables
 
 ```powershell
 copy .env.example .env
 ```
 
-| Değişken | Zorunlu | Açıklama |
-|----------|---------|----------|
-| `SERP_API_KEY` | Evet | [SerpAPI](https://serpapi.com/) anahtarı |
-| `GOOGLE_SHEETS_ID` | Hayır | Sheets entegrasyonu için tablo ID |
-| `GOOGLE_CREDENTIALS_FILE` | Hayır | Varsayılan: `kimlik.json` |
-| `PORT` | Hayır | Varsayılan: `5000` |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SERP_API_KEY` | Yes | [SerpAPI](https://serpapi.com/) key |
+| `GOOGLE_SHEETS_ID` | No | Spreadsheet ID for Sheets integration |
+| `GOOGLE_CREDENTIALS_FILE` | No | Default: `kimlik.json` |
+| `PORT` | No | Default: `5000` |
 
-### 4. Google Sheets (isteğe bağlı)
+### 4. Google Sheets (optional)
 
-Detay: **[docs/GOOGLE_SHEETS.md](docs/GOOGLE_SHEETS.md)**
+Details: **[docs/GOOGLE_SHEETS.md](docs/GOOGLE_SHEETS.md)**
 
 ---
 
-## Kullanım
+## Usage
 
 ```powershell
 python app.py
 ```
 
-Tarayıcı: **http://127.0.0.1:5000**
+Browser: **http://127.0.0.1:5000**
 
-1. Konum girin (örn. `Macedonia`, `Istanbul`)
-2. Kategorileri seçin
-3. **Etkinlikleri Tara** → sonuçlar canlı gelir
-4. **CSV İndir** veya **Sheets'e Gönder**
+1. Enter a location (e.g. `Macedonia`, `Istanbul`)
+2. Select categories
+3. **Scan Events** → results stream in live
+4. **Download CSV** or **Send to Sheets**
 
 ---
 
-## API uçları
+## API Endpoints
 
-| Metot | Yol | Açıklama |
-|-------|-----|----------|
-| `GET` | `/` | Ana arayüz |
-| `GET` | `/tara?konum=...&kategoriler=...` | SSE etkinlik akışı |
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Main interface |
+| `GET` | `/tara?konum=...&kategoriler=...` | SSE event stream |
 | `POST` | `/sheets` | JSON `{ "veriler": [...] }` → Sheets |
-| `POST` | `/csv` | JSON `{ "veriler": [...] }` → CSV dosyası |
+| `POST` | `/csv` | JSON `{ "veriler": [...] }` → CSV file |
 
 ---
 
-## Proje yapısı
+## Project Structure
 
 ```
 etkinlik-botu/
@@ -110,29 +110,29 @@ etkinlik-botu/
 ├── requirements.txt
 ├── .env.example
 ├── templates/
-│   └── index.html         # Arayüz
+│   └── index.html         # Frontend UI
 ├── docs/
 │   └── GOOGLE_SHEETS.md
 └── .github/
     └── workflows/ci.yml
 ```
 
-**Repoda olmamalı:** `.env`, `kimlik.json`
+**Should not be in the repo:** `.env`, `kimlik.json`
 
 ---
 
-## Kategoriler
+## Categories
 
-- 🔒 Siber güvenlik  
-- 💻 Yazılım / teknoloji  
-- 🎮 Oyun  
-- 🎉 Eğlence  
-- 📅 Genel etkinlik  
+- 🔒 Cybersecurity  
+- 💻 Software / Technology  
+- 🎮 Gaming  
+- 🎉 Entertainment  
+- 📅 General Events  
 
 ---
 
-## Katkı & lisans
+## Contributing & License
 
-[Katkı rehberi](CONTRIBUTING.md) · [MIT License](LICENSE) · [Güvenlik](SECURITY.md)
+[Contributing Guide](CONTRIBUTING.md) · [MIT License](LICENSE) · [Security](SECURITY.md)
 
 **Bekir Kocaman** — [@bekirkocaman](https://github.com/bekirkocaman)
